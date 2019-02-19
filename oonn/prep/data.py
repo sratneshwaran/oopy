@@ -192,7 +192,7 @@ class Dataset(object):
             False: if not already extracted
 
         """
-        return os.path.exists(download_folder+"."+filename+self.extract_marker)
+        return os.path.exists(os.path.join(download_folder,"."+filename+self.extract_marker))
 
 
     def _download(self, source_url, download_folder, filename, verbose=True):
