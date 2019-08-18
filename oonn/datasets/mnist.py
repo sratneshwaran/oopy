@@ -4,8 +4,6 @@ class MNISTDataset(InMemDataset):
                   download_path= "./data/MNIST", ):
         super().__init__(
             source_url = source_url,
-            download_url = download_path,
-
             )
         """
         Constructor that initializes all the internal variables some default

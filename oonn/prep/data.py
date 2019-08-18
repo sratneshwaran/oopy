@@ -26,6 +26,7 @@ class Dataset(object):
     """
 
     extract_marker = "_extracted"
+
     def __init__(self, source_url, download_url="./data/",
                  train_data_filename="", validate_data_filename="", test_data_filename="",
                  train_labels_filename="", validate_labels_filename="", test_labels_filename="",
@@ -176,7 +177,18 @@ class Dataset(object):
         if os.path.exists(os.path.join(download_folder,[subfolder,filename])):
             retval = True
         return retval
-    
+    def _needs_extraction(self, url):
+        """
+        Checks for extentions in the url to see if it needs extraction
+        :return: bool
+            True: extraction needed
+            False: extraction net needed
+        """
+        retval = False
+        if (url[-7] == ".tar.gz") | (url[-3]==".gz") | (url[-4]==".zip") :
+            retval = True
+        return retval
+
     def check_if_extracted(self, source_url, download_folder, filename):
         """
         Base class implementation always returns True if there is an .<filename>_extracted file in the folder
@@ -193,7 +205,6 @@ class Dataset(object):
 
         """
         return os.path.exists(os.path.join(download_folder,"."+filename+self.extract_marker))
-
 
     def _download(self, source_url, download_folder, filename, verbose=True):
         """
@@ -234,6 +245,29 @@ class Dataset(object):
         if verbose:
             print("Done!")
 
+    
+    def download(self, verbose = True):
+        """ Download the dataset """
+        self._download(self._source_url, self.download_url, self._getfilename(self._source_url), verbose=verbose )
+    
+    def _get_filename(url):
+        return url[url.rfind("/") + 1:]
+    
+    def _is_web_url(self, url):
+        """
+        Parameters:
+            url: str
+            url that needs to be checked
+            
+        return: 
+            True: is a web url
+            False: is not a web url
+        """
+        retval = False
+        if url[:4] == "http":
+            retval = True
+        return retval
+    
     def _extract(self, extract_filepath, extract_folder, verbose=True):
         """
         Base class implementation Extracts zip and tar.gz or gzip files.
@@ -268,7 +302,7 @@ class Dataset(object):
                          mode="r:gz").extractall(extract_folder)
         # for the check_if_extracted to return True we add an empty .<filename>_extracted file to the folder.
         marker_filename = os.path.join(extract_folder,
-                                       "."+extract_filepath[extract_filepath.rfind("/") + 1:]+self.extract_marker)
+                                       "."+self._get_filename(extract_filepath)+self.extract_marker)
 
         open(marker_filename, 'w').close()
         if verbose:
@@ -290,7 +324,7 @@ class Dataset(object):
             have to be downloaded. For brevity the source_url 
             could contain the filename
         
-        Returns
+        Returns=
         -------
         RetVal: bool
             True : if the dataset was downloaded and extracted
@@ -346,7 +380,7 @@ class Dataset(object):
                 if data_flag:  # if data is present
                     # check if data is already downloaded
                     if not self._check_if_downloaded(self._source_url, self._download_url, subfolder, file_name):
-                        self._download_and_extract(self._source_url, download_folder, file_name)
+                        self._downloa_trainingd_and_extract(self._source_url, download_folder, file_name)
                         # if labels are in a separate file download them
                         if label != "":
                             self._download_and_extract(self._source_url, download_folder, label)
@@ -365,12 +399,20 @@ class Dataset(object):
         self._clean_downloaded_folders()
         self._downloaded = False
         self.download_extract_if_needed(verbose)
+    def introduction(self):
+        """
+        Prints an introduction of how the dataset looks like
+        to be implemented in the subclasses
+        """
 
 class InMemDataset(Dataset):
     """
     InMemory dataset can be downloaded/extracted and loaded in memory if the size is small enough
     to fit in memory. The dataset is presented in a numpy array for convenience of other modules
     """
+    
+    """ the in memory data"""
+
     def __init__(self, source_url, download_path,
              train_data_filename="", validate_data_filename="", test_data_filename="",
              trail_labels_filename="", validate_labels_filename="", test_labels_filename="",
@@ -381,6 +423,11 @@ class InMemDataset(Dataset):
         Constructor that initializes the InMemDataset
         Params
         """
+        self._dataset = None;
+    def load(self):
+        """
+        Loads the dataset onto the memory, to be implemented in the sub classes
+        """
 
     def _getDataSet(self):
-        return
+        return self._dataset
